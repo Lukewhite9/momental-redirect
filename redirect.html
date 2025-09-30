@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Momental Level</title>
+
+  <!-- iMessage / social preview (static) -->
+  <meta property="og:title" content="Momental Level" />
+  <meta property="og:description" content="Tap to open this level in Momental" />
+  <meta property="og:image" content="https://yourdomain.com/icon.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI}</style>
+</head>
+<body>
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      // support both ?d= and ?v2= (your app can use either)
+      const d = params.get('d') || params.get('v2');
+      const title = params.get('title') || '';
+
+      // If no payload, optionally show instructions or go to App Store
+      if (!d) {
+        // Replace with your real App Store URL below if desired
+        const appStoreUrl = 'https://apps.apple.com/app/id6745159953';
+        window.location.href = appStoreUrl;
+        return;
+      }
+
+      const appUrl = `momental://import?v2=${encodeURIComponent(d)}&title=${encodeURIComponent(title)}`;
+      const appStoreUrl = 'https://apps.apple.com/app/idYOUR_APP_ID';
+
+      // Fallback timer: if app doesn't open, go to App Store
+      const TIMEOUT = 1000;
+      let fallback = setTimeout(function () {
+        window.location.href = appStoreUrl;
+      }, TIMEOUT);
+
+      function cancelFallback() {
+        clearTimeout(fallback);
+      }
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden') cancelFallback();
+      }, false);
+      window.addEventListener('pagehide', cancelFallback, false);
+
+      // Try to open the app
+      try {
+        window.location.href = appUrl;
+      } catch (e) {
+        const ifr = document.createElement('iframe');
+        ifr.style.display = 'none';
+        ifr.src = appUrl;
+        document.body.appendChild(ifr);
+        setTimeout(function () {
+          try { document.body.removeChild(ifr); } catch (e) {}
+        }, TIMEOUT + 500);
+      }
+
+      // Small inline UI while redirecting
+      document.body.innerHTML = '<div style="padding:20px;font-size:16px">Opening Momental… If nothing happens, <a href="' + appStoreUrl + '">install from the App Store</a>.</div>';
+    })();
+  </script>
+  <noscript>
+    Open this link on iOS with Momental installed, or <a href="https://apps.apple.com/app/idYOUR_APP_ID">install Momental</a>.
+  </noscript>
+</body>
+</html>
