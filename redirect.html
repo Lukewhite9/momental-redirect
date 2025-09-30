@@ -103,15 +103,28 @@
       const fallbackBtn = document.getElementById('fallback-btn');
       const appStoreUrl = 'https://apps.apple.com/app/id6745159953';
       
-      // Get level data from subdomain (new ultra-compact format)
-      // URL format: https://BASE36STRING.lukewhite9.github.io
-      const hostname = window.location.hostname;
-      const levelData = hostname.split('.')[0]; // First part of subdomain
+      // Get level data from URL path segments
+      // URL format: https://lukewhite9.github.io/momental-redirect/CHUNK1/CHUNK2/...
+      const pathParts = window.location.pathname.split('/');
       
-      // Validate level data (should be alphanumeric 0-9, A-Z)
-      const alphanumericPattern = /^[0-9A-Z]+$/;
-      if (!levelData || !alphanumericPattern.test(levelData) || levelData === 'lukewhite9') {
-        statusEl.textContent = 'No valid level data found';
+      // Find the index of 'momental-redirect' and get everything after it
+      const redirectIndex = pathParts.indexOf('momental-redirect');
+      if (redirectIndex === -1 || redirectIndex === pathParts.length - 1) {
+        statusEl.textContent = 'No level data found in URL';
+        fallbackBtn.style.display = 'inline-block';
+        fallbackBtn.href = appStoreUrl;
+        fallbackBtn.textContent = 'Get Momental';
+        return;
+      }
+      
+      // Reconstruct Base62 string from path segments after 'momental-redirect'
+      const chunks = pathParts.slice(redirectIndex + 1).filter(chunk => chunk.length > 0);
+      const levelData = chunks.join('');
+      
+      // Validate level data (should be Base62: 0-9, a-z, A-Z)
+      const base62Pattern = /^[0-9a-zA-Z]+$/;
+      if (!levelData || !base62Pattern.test(levelData)) {
+        statusEl.textContent = 'Invalid level data format';
         fallbackBtn.style.display = 'inline-block';
         fallbackBtn.href = appStoreUrl;
         fallbackBtn.textContent = 'Get Momental';
