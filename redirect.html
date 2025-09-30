@@ -17,7 +17,7 @@
     (function () {
       const params = new URLSearchParams(window.location.search);
       // support both ?d= and ?v2= (your app can use either)
-      const d = params.get('d') || params.get('v2');
+      const d = window.location.hash.substring(1);
       const title = params.get('title') || '';
 
       // If no payload, optionally show instructions or go to App Store
