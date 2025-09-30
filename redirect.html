@@ -103,21 +103,23 @@
       const fallbackBtn = document.getElementById('fallback-btn');
       const appStoreUrl = 'https://apps.apple.com/app/id6745159953';
       
-      // Get level data from URL parameter
-      const params = new URLSearchParams(window.location.search);
-      const levelData = params.get('level');
+      // Get level data from subdomain (new ultra-compact format)
+      // URL format: https://BASE36STRING.lukewhite9.github.io
+      const hostname = window.location.hostname;
+      const levelData = hostname.split('.')[0]; // First part of subdomain
       
-      // If no level data, go to App Store
-      if (!levelData) {
-        statusEl.textContent = 'No level data found';
+      // Validate level data (should be alphanumeric 0-9, A-Z)
+      const alphanumericPattern = /^[0-9A-Z]+$/;
+      if (!levelData || !alphanumericPattern.test(levelData) || levelData === 'lukewhite9') {
+        statusEl.textContent = 'No valid level data found';
         fallbackBtn.style.display = 'inline-block';
         fallbackBtn.href = appStoreUrl;
         fallbackBtn.textContent = 'Get Momental';
         return;
       }
       
-      // Create app URL
-      const appUrl = `momental://import?level=${encodeURIComponent(levelData)}`;
+      // Create app URL - completely symbol-free
+      const appUrl = `momental://import/level/${levelData}`;
       
       // Set up fallback
       const TIMEOUT = 2500;
