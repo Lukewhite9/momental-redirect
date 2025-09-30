@@ -4,69 +4,181 @@
   <meta charset="utf-8" />
   <title>Momental Level</title>
 
-  <!-- iMessage / social preview (static) -->
+  <!-- iMessage / social preview -->
   <meta property="og:title" content="Momental Level" />
   <meta property="og:description" content="Tap to open this level in Momental" />
   <meta property="og:image" content="https://Lukewhite9.github.io/momental-redirect/momentalicon.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI}</style>
+  
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .container {
+      text-align: center;
+      padding: 40px 20px;
+      max-width: 400px;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      background: white;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    h1 {
+      margin: 0 0 10px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    p {
+      margin: 0 0 30px;
+      opacity: 0.9;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 8px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <script>
-    (function () {
-      const params = new URLSearchParams(window.location.search);
-      // support both ?d= and ?v2= (your app can use either)
-      let d = window.location.hash.substring(1);
-        if (d.startsWith('L')) {
-        d = d.substring(1); // Remove the 'L' prefix
-      }
-      const title = params.get('title') || '';
+  <div class="container">
+    <div class="logo">M</div>
+    <h1>Opening Momental...</h1>
+    <p id="status">Redirecting to the app</p>
+    <a href="#" id="fallback-btn" class="btn" style="display: none;">Install Momental</a>
+  </div>
 
-      // If no payload, optionally show instructions or go to App Store
-      if (!d) {
-        // Replace with your real App Store URL below if desired
-        const appStoreUrl = 'https://apps.apple.com/app/id6745159953';
-        window.location.href = appStoreUrl;
+  <script>
+    (function() {
+      const statusEl = document.getElementById('status');
+      const fallbackBtn = document.getElementById('fallback-btn');
+      const appStoreUrl = 'https://apps.apple.com/app/id6745159953';
+      
+      // Get level data from URL parameter
+      const params = new URLSearchParams(window.location.search);
+      const levelData = params.get('level');
+      
+      // If no level data, go to App Store
+      if (!levelData) {
+        statusEl.textContent = 'No level data found';
+        fallbackBtn.style.display = 'inline-block';
+        fallbackBtn.href = appStoreUrl;
+        fallbackBtn.textContent = 'Get Momental';
         return;
       }
-
-      const appUrl = `momental://import?v2=${encodeURIComponent(d)}&title=${encodeURIComponent(title)}`;
-      const appStoreUrl = 'https://apps.apple.com/app/idYOUR_APP_ID';
-
-      // Fallback timer: if app doesn't open, go to App Store
-      const TIMEOUT = 1000;
-      let fallback = setTimeout(function () {
-        window.location.href = appStoreUrl;
+      
+      // Create app URL
+      const appUrl = `momental://import?level=${encodeURIComponent(levelData)}`;
+      
+      // Set up fallback
+      const TIMEOUT = 2500;
+      let fallbackTimer = setTimeout(() => {
+        statusEl.innerHTML = '<span class="spinner"></span>App not installed?';
+        fallbackBtn.style.display = 'inline-block';
+        fallbackBtn.href = appStoreUrl;
+        fallbackBtn.textContent = 'Install Momental';
       }, TIMEOUT);
-
+      
+      // Cancel fallback if app opens
       function cancelFallback() {
-        clearTimeout(fallback);
+        clearTimeout(fallbackTimer);
       }
-      document.addEventListener('visibilitychange', function () {
-        if (document.visibilityState === 'hidden') cancelFallback();
-      }, false);
-      window.addEventListener('pagehide', cancelFallback, false);
-
+      
+      // Listen for page visibility changes (app opened)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          cancelFallback();
+        }
+      });
+      
+      // Listen for page unload (app opened)
+      window.addEventListener('pagehide', cancelFallback);
+      
       // Try to open the app
       try {
+        // Primary method: direct navigation
         window.location.href = appUrl;
       } catch (e) {
-        const ifr = document.createElement('iframe');
-        ifr.style.display = 'none';
-        ifr.src = appUrl;
-        document.body.appendChild(ifr);
-        setTimeout(function () {
-          try { document.body.removeChild(ifr); } catch (e) {}
-        }, TIMEOUT + 500);
+        // Fallback method: invisible iframe
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = appUrl;
+        document.body.appendChild(iframe);
+        
+        // Clean up iframe
+        setTimeout(() => {
+          try {
+            document.body.removeChild(iframe);
+          } catch (e) {}
+        }, TIMEOUT + 1000);
       }
-
-      // Small inline UI while redirecting
-      document.body.innerHTML = '<div style="padding:20px;font-size:16px">Opening Momental… If nothing happens, <a href="' + appStoreUrl + '">install from the App Store</a>.</div>';
+      
+      // Update status after a short delay
+      setTimeout(() => {
+        if (document.visibilityState === 'visible') {
+          statusEl.innerHTML = '<span class="spinner"></span>Opening app...';
+        }
+      }, 500);
+      
     })();
   </script>
+  
   <noscript>
-    Open this link on iOS with Momental installed, or <a href="https://apps.apple.com/app/idYOUR_APP_ID">install Momental</a>.
+    <div class="container">
+      <div class="logo">M</div>
+      <h1>JavaScript Required</h1>
+      <p>Please enable JavaScript to open this Momental level.</p>
+      <a href="https://apps.apple.com/app/id6745159953" class="btn">Get Momental</a>
+    </div>
   </noscript>
 </body>
 </html>
