@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Momental Level</title>
+
+  <!-- iMessage / social preview -->
+  <meta property="og:title" content="Momental Level" />
+  <meta property="og:description" content="Tap to open this level in Momental" />
+  <meta property="og:image" content="https://Lukewhite9.github.io/momental-redirect/momentalicon.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .container {
+      text-align: center;
+      padding: 40px 20px;
+      max-width: 400px;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      background: white;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    h1 {
+      margin: 0 0 10px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    p {
+      margin: 0 0 30px;
+      opacity: 0.9;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 8px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">M</div>
+    <h1>Opening Momental...</h1>
+    <p id="status">Redirecting to the app</p>
+    <a href="#" id="fallback-btn" class="btn" style="display: none;">Install Momental</a>
+  </div>
+
+  <script>
+    (function() {
+      const statusEl = document.getElementById('status');
+      const fallbackBtn = document.getElementById('fallback-btn');
+      const appStoreUrl = 'https://apps.apple.com/app/id6745159953';
+      
+      // Get level data from URL path segments
+      // URL format: https://lukewhite9.github.io/momental-redirect/CHUNK1/CHUNK2/...
+      const pathParts = window.location.pathname.split('/');
+      
+      // Find the index of 'momental-redirect' and get everything after it
+      const redirectIndex = pathParts.indexOf('momental-redirect');
+      if (redirectIndex === -1 || redirectIndex === pathParts.length - 1) {
+        statusEl.textContent = 'No level data found in URL';
+        fallbackBtn.style.display = 'inline-block';
+        fallbackBtn.href = appStoreUrl;
+        fallbackBtn.textContent = 'Get Momental';
+        return;
+      }
+      
+      // Reconstruct Base62 string from path segments after 'momental-redirect'
+      const chunks = pathParts.slice(redirectIndex + 1).filter(chunk => chunk.length > 0);
+      const levelData = chunks.join('');
+      
+      // Validate level data (should be Base62: 0-9, a-z, A-Z)
+      const base62Pattern = /^[0-9a-zA-Z]+$/;
+      if (!levelData || !base62Pattern.test(levelData)) {
+        statusEl.textContent = 'Invalid level data format';
+        fallbackBtn.style.display = 'inline-block';
+        fallbackBtn.href = appStoreUrl;
+        fallbackBtn.textContent = 'Get Momental';
+        return;
+      }
+      
+      // Create app URL - completely symbol-free
+      const appUrl = `momental://import/level/${levelData}`;
+      
+      // Set up fallback
+      const TIMEOUT = 2500;
+      let fallbackTimer = setTimeout(() => {
+        statusEl.innerHTML = '<span class="spinner"></span>App not installed?';
+        fallbackBtn.style.display = 'inline-block';
+        fallbackBtn.href = appStoreUrl;
+        fallbackBtn.textContent = 'Install Momental';
+      }, TIMEOUT);
+      
+      // Cancel fallback if app opens
+      function cancelFallback() {
+        clearTimeout(fallbackTimer);
+      }
+      
+      // Listen for page visibility changes (app opened)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          cancelFallback();
+        }
+      });
+      
+      // Listen for page unload (app opened)
+      window.addEventListener('pagehide', cancelFallback);
+      
+      // Try to open the app
+      try {
+        // Primary method: direct navigation
+        window.location.href = appUrl;
+      } catch (e) {
+        // Fallback method: invisible iframe
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = appUrl;
+        document.body.appendChild(iframe);
+        
+        // Clean up iframe
+        setTimeout(() => {
+          try {
+            document.body.removeChild(iframe);
+          } catch (e) {}
+        }, TIMEOUT + 1000);
+      }
+      
+      // Update status after a short delay
+      setTimeout(() => {
+        if (document.visibilityState === 'visible') {
+          statusEl.innerHTML = '<span class="spinner"></span>Opening app...';
+        }
+      }, 500);
+      
+    })();
+  </script>
+  
+  <noscript>
+    <div class="container">
+      <div class="logo">M</div>
+      <h1>JavaScript Required</h1>
+      <p>Please enable JavaScript to open this Momental level.</p>
+      <a href="https://apps.apple.com/app/id6745159953" class="btn">Get Momental</a>
+    </div>
+  </noscript>
+</body>
+</html>
