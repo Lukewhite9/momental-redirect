@@ -17,7 +17,10 @@
     (function () {
       const params = new URLSearchParams(window.location.search);
       // support both ?d= and ?v2= (your app can use either)
-      const d = window.location.hash.substring(1);
+      let d = window.location.hash.substring(1);
+        if (d.startsWith('L')) {
+        d = d.substring(1); // Remove the 'L' prefix
+      }
       const title = params.get('title') || '';
 
       // If no payload, optionally show instructions or go to App Store
