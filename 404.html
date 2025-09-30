@@ -104,11 +104,11 @@
       const appStoreUrl = 'https://apps.apple.com/app/id6745159953';
       
       // Get level data from URL path segments
-      // URL format: https://lukewhite9.github.io/momental-redirect/CHUNK1/CHUNK2/...
+      // URL format: https://lukewhite9.github.io/m/CHUNK1/CHUNK2/...
       const pathParts = window.location.pathname.split('/');
       
-      // Find the index of 'momental-redirect' and get everything after it
-      const redirectIndex = pathParts.indexOf('momental-redirect');
+      // Find the index of 'm' and get everything after it
+      const redirectIndex = pathParts.indexOf('m');
       if (redirectIndex === -1 || redirectIndex === pathParts.length - 1) {
         statusEl.textContent = 'No level data found in URL';
         fallbackBtn.style.display = 'inline-block';
@@ -117,7 +117,7 @@
         return;
       }
       
-      // Reconstruct Base62 string from path segments after 'momental-redirect'
+      // Reconstruct Base62 string from path segments after 'm'
       const chunks = pathParts.slice(redirectIndex + 1).filter(chunk => chunk.length > 0);
       const levelData = chunks.join('');
       
