@@ -33,15 +33,14 @@
       width: 80px;
       height: 80px;
       margin: 0 auto 20px;
+      background: white;
       border-radius: 16px;
-      overflow: hidden;
-    }
-
-    .logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      color: #667eea;
     }
     
     h1 {
@@ -92,21 +91,23 @@
 </head>
 <body>
   <div class="container">
-    <div class="logo">
-      <img src="https://Lukewhite9.github.io/momental-redirect/momentalicon.png" alt="Momental Icon" />
-    </div>
+    <div class="logo">M</div>
     <h1>Opening Momental...</h1>
     <p id="status">Redirecting to the app</p>
     <a href="#" id="fallback-btn" class="btn" style="display: none;">Install Momental</a>
   </div>
 
-  <!-- existing script unchanged -->
   <script>
     (function() {
       const statusEl = document.getElementById('status');
       const fallbackBtn = document.getElementById('fallback-btn');
       const appStoreUrl = 'https://apps.apple.com/app/id6745159953';
+      
+      // Get level data from URL path segments
+      // URL format: https://lukewhite9.github.io/momental-redirect/CHUNK1/CHUNK2/...
       const pathParts = window.location.pathname.split('/');
+      
+      // Find the index of 'momental-redirect' and get everything after it
       const redirectIndex = pathParts.indexOf('momental-redirect');
       if (redirectIndex === -1 || redirectIndex === pathParts.length - 1) {
         statusEl.textContent = 'No level data found in URL';
@@ -115,8 +116,12 @@
         fallbackBtn.textContent = 'Get Momental';
         return;
       }
+      
+      // Reconstruct Base62 string from path segments after 'momental-redirect'
       const chunks = pathParts.slice(redirectIndex + 1).filter(chunk => chunk.length > 0);
       const levelData = chunks.join('');
+      
+      // Validate level data (should be Base62: 0-9, a-z, A-Z)
       const base62Pattern = /^[0-9a-zA-Z]+$/;
       if (!levelData || !base62Pattern.test(levelData)) {
         statusEl.textContent = 'Invalid level data format';
@@ -125,7 +130,11 @@
         fallbackBtn.textContent = 'Get Momental';
         return;
       }
+      
+      // Create app URL - completely symbol-free
       const appUrl = `momental://import/level/${levelData}`;
+      
+      // Set up fallback
       const TIMEOUT = 2500;
       let fallbackTimer = setTimeout(() => {
         statusEl.innerHTML = '<span class="spinner"></span>App not installed?';
@@ -133,39 +142,54 @@
         fallbackBtn.href = appStoreUrl;
         fallbackBtn.textContent = 'Install Momental';
       }, TIMEOUT);
+      
+      // Cancel fallback if app opens
       function cancelFallback() {
         clearTimeout(fallbackTimer);
       }
+      
+      // Listen for page visibility changes (app opened)
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           cancelFallback();
         }
       });
+      
+      // Listen for page unload (app opened)
       window.addEventListener('pagehide', cancelFallback);
+      
+      // Try to open the app
       try {
+        // Primary method: direct navigation
         window.location.href = appUrl;
       } catch (e) {
+        // Fallback method: invisible iframe
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         iframe.src = appUrl;
         document.body.appendChild(iframe);
+        
+        // Clean up iframe
         setTimeout(() => {
-          try { document.body.removeChild(iframe); } catch (e) {}
+          try {
+            document.body.removeChild(iframe);
+          } catch (e) {}
         }, TIMEOUT + 1000);
       }
+      
+      // Update status after a short delay
       setTimeout(() => {
         if (document.visibilityState === 'visible') {
           statusEl.innerHTML = '<span class="spinner"></span>Opening app...';
         }
       }, 500);
+      
     })();
   </script>
   
   <noscript>
     <div class="container">
-      <div class="logo">
-        <img src="https://Lukewhite9.github.io/momental-redirect/momentalicon.png" alt="Momental Icon" />
-      </div>
+      <div class="logo">M</div>
       <h1>JavaScript Required</h1>
       <p>Please enable JavaScript to open this Momental level.</p>
       <a href="https://apps.apple.com/app/id6745159953" class="btn">Get Momental</a>
