@@ -29,18 +29,14 @@
       max-width: 400px;
     }
     
-    .logo {
+    .logo-img {
       width: 80px;
       height: 80px;
-      margin: 0 auto 20px;
-      background: white;
       border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      font-weight: bold;
-      color: #667eea;
+      display: block;
+      margin: 0 auto 20px;
+      object-fit: cover;
+      background: white;
     }
     
     h1 {
@@ -91,7 +87,9 @@
 </head>
 <body>
   <div class="container">
-    <div class="logo">M</div>
+    <!-- Updated: show PNG instead of text M -->
+    <img src="/momentalicon.png" alt="Momental" class="logo-img">
+    
     <h1>Opening Momental...</h1>
     <p id="status">Redirecting to the app</p>
     <a href="#" id="fallback-btn" class="btn" style="display: none;">Install Momental</a>
@@ -104,7 +102,6 @@
       const appStoreUrl = 'https://apps.apple.com/app/id6745159953';
       
       // Get level data from URL path segments
-      // URL format: https://lukewhite9.github.io/momental-redirect/CHUNK1/CHUNK2/...
       const pathParts = window.location.pathname.split('/');
       
       // Find the index of 'momental-redirect' and get everything after it
@@ -131,7 +128,7 @@
         return;
       }
       
-      // Create app URL - completely symbol-free
+      // Create app URL
       const appUrl = `momental://import/level/${levelData}`;
       
       // Set up fallback
@@ -148,48 +145,37 @@
         clearTimeout(fallbackTimer);
       }
       
-      // Listen for page visibility changes (app opened)
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           cancelFallback();
         }
       });
-      
-      // Listen for page unload (app opened)
       window.addEventListener('pagehide', cancelFallback);
       
       // Try to open the app
       try {
-        // Primary method: direct navigation
         window.location.href = appUrl;
       } catch (e) {
-        // Fallback method: invisible iframe
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         iframe.src = appUrl;
         document.body.appendChild(iframe);
-        
-        // Clean up iframe
         setTimeout(() => {
-          try {
-            document.body.removeChild(iframe);
-          } catch (e) {}
+          try { document.body.removeChild(iframe); } catch (e) {}
         }, TIMEOUT + 1000);
       }
       
-      // Update status after a short delay
       setTimeout(() => {
         if (document.visibilityState === 'visible') {
           statusEl.innerHTML = '<span class="spinner"></span>Opening app...';
         }
       }, 500);
-      
     })();
   </script>
   
   <noscript>
     <div class="container">
-      <div class="logo">M</div>
+      <img src="/momentalicon.png" alt="Momental" class="logo-img">
       <h1>JavaScript Required</h1>
       <p>Please enable JavaScript to open this Momental level.</p>
       <a href="https://apps.apple.com/app/id6745159953" class="btn">Get Momental</a>
